@@ -8,7 +8,7 @@ import fs from "fs";
 dotenv.config();
 
 const app = express();
-const PORT = process.env.PORT ? parseInt(process.env.PORT, 10) : 3000;
+const PORT = process.env.PORT || 3000;
 
 app.use(express.json());
 
@@ -346,8 +346,12 @@ Yêu cầu về giọng điệu:
 
 // Start server
 async function startServer() {
-  if (process.env.NODE_ENV !== "production") {
-    // Import Vite dynamics in dev mode
+  // Safe environment detection for Hostinger / Passenger / production builds
+  const isProdObj = typeof __filename !== "undefined" && (__filename.endsWith(".cjs") || __filename.includes("dist"));
+  const isProd = process.env.NODE_ENV === "production" || isProdObj;
+
+  if (!isProd) {
+    // Import Vite dynamics in dev mode only
     const { createServer: createViteServer } = await import("vite");
     const vite = await createViteServer({
       server: { middlewareMode: true },
@@ -362,9 +366,18 @@ async function startServer() {
     });
   }
 
-  app.listen(PORT, "0.0.0.0", () => {
-    console.log(`[Mai Công Việc Backend] Server running on http://0.0.0.0:${PORT} in ${process.env.NODE_ENV || "development"} mode`);
-  });
+  // Bind to socket pipe or standard port dynamically (Passenger compatibility)
+  const isSocketPath = typeof PORT === "string" && isNaN(Number(PORT));
+  if (isSocketPath) {
+    app.listen(PORT, () => {
+      console.log(`[Mai Công Việc Backend] Server running on Unix Socket/Pipe: ${PORT}`);
+    });
+  } else {
+    const portNum = typeof PORT === "number" ? PORT : parseInt(PORT as string, 10);
+    app.listen(portNum, "0.0.0.0", () => {
+      console.log(`[Mai Công Việc Backend] Server running in Production: http://0.0.0.0:${portNum}`);
+    });
+  }
 }
 
 startServer().catch((err) => {
