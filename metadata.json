@@ -1,0 +1,6 @@
+{
+  "name": "Mai Công Việc",
+  "description": "Ứng dụng quản lý công nợ thông minh tiếng Việt, giúp theo dõi các khoản nợ phải thu/phải trả, thông báo nhắc nợ đến hạn báo đỏ, xuất báo cáo Excel và tự động soạn tin nhắn nhắc nợ tinh tế bằng AI.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}
